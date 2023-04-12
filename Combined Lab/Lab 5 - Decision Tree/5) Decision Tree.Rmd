@@ -1,0 +1,84 @@
+---
+title: "5) Decision Tree"
+output: html_document
+date: "2023-04-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Pre-processing the data-set**
+```{r}
+data <- read.csv("Decision_Tree_Dataset.csv", header = TRUE)
+processed_data <- na.omit(data)
+head(processed_data)
+summary(processed_data)
+str(processed_data)
+nrow(processed_data)
+```
+**Splitting the model**
+```{r}
+library(caret)
+
+indexs = createDataPartition(processed_data$Outcome, times = 1, p = 0.8, list = F) 
+#times = no. of times to be split
+#p = percentage of data to be used for training, here 80% is used of training and 20% for testing
+
+train = processed_data[indexs, ]
+nrow(train)
+test = processed_data[-indexs, ]
+nrow(test)
+```
+
+**Creating the model - Information Gain and Gini Index**
+```{r}
+# Load the rpart package
+library(rpart)
+
+# Use Information Gain as the splitting criterion
+df_tree_info_gain <- rpart(Outcome ~ ., data = train, 
+                           method = "class", parms = list(split = "information"))
+# Use Gini Index as the splitting criterion
+df_tree_gini_index <- rpart(Outcome ~ ., data = train, 
+                            method = "class", parms = list(split = "gini"))
+```
+
+**Creating the Decision Tree of the model**
+```{r}
+# Load the rpart.plot package
+library(rpart.plot)
+
+# Visualize the decision tree using Information Gain as the splitting criterion
+rpart.plot(df_tree_info_gain, 
+           main = "Decision Tree - Information Gain", type = 2, extra = 101)
+
+# Visualize the decision tree using Gini Index as the splitting criterion
+rpart.plot(df_tree_gini_index, 
+           main = "Decision Tree - Gini Index", type = 2, extra = 101)
+```
+
+**Predicting the values using the model and the confusion matrix**
+```{r}
+predicted = predict(df_tree_info_gain, test, type = "class")
+predicted
+confusionMatrix(factor(test$Outcome), factor(predicted))
+```
+
+**Another method of creating a decision tree model**
+```{r}
+library(caret)
+library(party)
+library(partykit)
+model_using_ctree <- ctree(Outcome ~ ., data = train)
+plot(model_using_ctree)
+
+predicted_using_ctree = predict(model_using_ctree, test)
+predicted_using_ctree
+
+tb<-table(test$Outcome, predict(model_using_ctree, test))
+tb
+```
+
+
+***Conclusion: The accuracy of the model is, 77.98% which can be regarded as an acceptable solution for the dataset. In conclusion, the Decision Tree algorithm is a powerful tool for classification and regression tasks. It is a widely used algorithm in machine learning, with applications in various fields such as finance, healthcare, and marketing. During the course of this lab report, we have implemented and evaluated the Decision Tree algorithm on a given dataset. We have seen how the algorithm works and how to tune its parameters for better performance. We have also discussed some of the limitations of Decision Trees, such as the tendency to overfit and the sensitivity to small changes in the data. Overall, Decision Trees are a useful algorithm to have in your machine learning toolbox. They are easy to interpret and can handle both categorical and numerical data. However, it is important to be aware of their limitations and to use them in combination with other algorithms or techniques, such as ensemble methods, to achieve better performance. In conclusion, the Decision Tree algorithm is a valuable tool for data analysis and prediction, and its flexibility and interpretability make it a popular choice in many real-world applications.***

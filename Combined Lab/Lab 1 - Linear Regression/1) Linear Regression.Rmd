@@ -1,0 +1,89 @@
+---
+title: "1) Linear Regression"
+output:
+  html_document: default
+  pdf_document: default
+date: "2023-03-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Pre-processing the data-set**
+```{r}
+data <- read.csv("Linear_Regression_Dataset_new.csv", header = TRUE)
+processed_data <- na.omit(data)
+head(processed_data)
+summary(processed_data)
+str(processed_data)
+nrow(processed_data)
+``` 
+**Splitting the model**
+```{r}
+library(caret)
+
+indexs = createDataPartition(processed_data$y, times = 1, p = 0.7, list = F) 
+#times = no. of times to be split
+#p = percentage of data to be used for training, here 70% is used of training and 30% for testing
+
+train = processed_data[indexs, ]
+nrow(train)
+test = processed_data[-indexs, ]
+nrow(test)
+```
+
+**Creating the model**
+```{r}
+cor(train$x, train$y)
+
+#y = dependent
+#x = independent
+#y = slope * x + intercept
+# dependent ~ independent
+model <- lm(y ~ x, data = train)
+model
+summary(model)
+```
+
+**Predicting the values using the model**
+```{r}
+#df <- data.frame(x = c(29)), just to initially check
+predicted <- predict(model, test)
+predicted
+```
+
+**Plotting the linear regression curve**
+```{r}
+library(ggplot2)
+
+ggplot(processed_data, aes(x = x, y = y)) + geom_point() + geom_smooth(method = 'lm')
+```
+
+```{r}
+scatter.smooth(x = processed_data$x, y = processed_data$y, main = "y ~ x")
+```
+
+```{r}
+plot(processed_data$x, processed_data$y, main = "y ~ x")
+abline(lm(processed_data$y ~ processed_data$x, data = processed_data), col = "blue")
+```
+
+```{r}
+res <- model$residuals
+#create Q-Q plot for residuals
+qqnorm(res)
+```
+
+```{r}
+res1 <- model$residuals
+
+plot.new()
+#text(x = 0.5, y = 0.5, labels = "This is a new plot canvas.")
+qqline(res1)
+```
+
+***Confusion Matrix: It is not used in Linear Regression as Confusion Matrix is only applied to classification problems, not regression problems.***
+
+
+***Conclusion: As we can see, the model is performing poorly as the dataset is containing less number of numerical data and fewer relationships among them. As we can observe in the correlation coefficient calculation, the relationship between age and charges is not more than 50%.To improve the model, we can convert the categorical columns into numerical dummy data i.e. convert them into numerical factors which can be used to calculate in the regression analysis.From the summary of the model, we can observe that age and bmi attributes have a higher impact or significance on the overall accuracy of the model. A confusion matrix cannot be applied in regression analysis.Innovation in this experiment includes using regression along with caret package to find out major insights into the field of insurance charges and analysing the behaviour of insurance charges according to the given attributes.***

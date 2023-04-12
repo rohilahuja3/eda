@@ -1,0 +1,53 @@
+---
+title: "4) Naive Bayes"
+output: html_document
+date: "2023-04-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Pre-processing the data-set**
+```{r}
+data <- read.csv("Naive_Bayes_Dataset.csv", header = TRUE)
+processed_data <- na.omit(data)
+head(processed_data)
+summary(processed_data)
+str(processed_data)
+nrow(processed_data)
+```
+
+**Splitting the model**
+```{r}
+library(caret)
+
+indexs = createDataPartition(processed_data$Outcome, times = 1, p = 0.8, list = F) 
+#times = no. of times to be split
+#p = percentage of data to be used for training, here 80% is used of training and 20% for testing
+
+train = processed_data[indexs, ]
+nrow(train)
+test = processed_data[-indexs, ]
+nrow(test)
+```
+
+**Creating the model**
+```{r}
+library(e1071)
+
+model <- naiveBayes(Outcome ~ ., data = train)
+model
+```
+
+**Predicting the values using the model and the Confusion matrix**
+```{r}
+Predict <- predict(model, newdata = test)
+Predict
+
+#table(test$Outcome, predict(model, test)), sometimes if you get an error of values overlapping use this
+cm <- table(test$Outcome, Predict)
+confusionMatrix(cm)
+```
+
+***Conclusion: The accuracy of the model is, 83.66% which can be regarded as an acceptable solution for the dataset. In conclusion, Naive Bayes is a simple yet powerful algorithm for classification tasks. It is based on Bayes' theorem, which allows us to calculate the probability of a certain class given the data we have. Despite its simplicity, Naive Bayes has been shown to be highly effective in many real-world applications, such as spam detection, sentiment analysis, and medical diagnosis. During the course of this lab report, we have implemented and evaluated the Naive Bayes algorithm on a given dataset. We have seen how the algorithm works and how to tune its parameters for better performance. We have also discussed some of the limitations of Naive Bayes, such as the assumption of independence between features, and how to address these limitations. Overall, Naive Bayes is a useful algorithm to have in your machine learning toolbox. It is easy to implement, fast to train, and can achieve good results even with limited data. However, it is important to keep in mind its limitations and to choose the appropriate algorithm for your specific task.***

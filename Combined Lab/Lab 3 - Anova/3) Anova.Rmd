@@ -1,0 +1,78 @@
+---
+title: "3) Anova"
+output: html_document
+date: "2023-04-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Pre-processing the data-set**
+```{r}
+data <- read.csv("Anova_Dataset.csv", header = TRUE)
+processed_data <- na.omit(data)
+head(processed_data)
+summary(processed_data)
+str(processed_data)
+nrow(processed_data)
+```
+
+**Splitting the model**
+```{r}
+library(caret)
+
+indexs = createDataPartition(processed_data$yield, times = 1, p = 0.8, list = F) 
+#times = no. of times to be split
+#p = percentage of data to be used for training, here 80% is used of training and 20% for testing
+
+train = processed_data[indexs, ]
+nrow(train)
+test = processed_data[-indexs, ]
+nrow(test)
+```
+
+**Creating the model - One way Anova**
+```{r}
+## ONE-WAY ANOVA
+av1 <- aov(train$yield ~ train$density, data = train)
+av1
+summary(av1)
+
+av2 <- aov(train$yield ~ train$block, data = train)
+av2
+summary(av2)
+
+av3 <- aov(train$yield ~ train$fertilizer, data = train)
+av3
+summary(av3)
+```
+
+**Creating the model - Two way Anova**
+```{r}
+## ONE-WAY ANOVA
+av12 <- aov(train$yield ~ train$density + train$block + train$fertilizer, data = train)
+av12
+summary(av1)
+```
+
+**Finding the best fit**
+```{r}
+library(AICcmodavg)
+
+one.way <- av3
+two.way <- av12
+intr <- aov(train$yield ~ train$density*train$fertilizer, data = train)
+
+model.set <- list(one.way, two.way, intr)
+model.names <- c('one.way', 'two.way', 'intr')
+
+aictab(model.set, modnames = model.names)
+```
+
+**Creating histogram**
+```{r}
+hist(processed_data$yield)
+```
+
+***Conclusion: We found a statistically-significant difference in average crop yield by both fertilizer type (F(2)=9.018, p < 0.001) and by planting density (F(1)=15.316, p < 0.001).***

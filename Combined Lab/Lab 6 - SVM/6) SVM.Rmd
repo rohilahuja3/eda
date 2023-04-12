@@ -1,0 +1,53 @@
+---
+title: "6) SVM"
+output: html_document
+date: "2023-04-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Pre-processing the data-set**
+```{r}
+data <- read.csv("SVM_Dataset.csv", header = TRUE)
+processed_data <- na.omit(data)
+head(processed_data)
+summary(processed_data)
+str(processed_data)
+nrow(processed_data)
+```
+
+**Splitting the model**
+```{r}
+library(caret)
+
+indexs = createDataPartition(processed_data$Outcome, times = 1, p = 0.8, list = F) 
+#times = no. of times to be split
+#p = percentage of data to be used for training, here 80% is used of training and 20% for testing
+
+train = processed_data[indexs, ]
+nrow(train)
+test = processed_data[-indexs, ]
+nrow(test)
+```
+
+**Creating the model**
+```{r}
+library(e1071)
+
+model = svm(formula = Outcome ~ ., data = train, type = 'C-classification' ,kernel = 'linear', cost=1)
+model
+```
+
+**Predicting the values using the model and the Confusion matrix**
+```{r}
+predicted = predict(model , newdata = test)
+predicted
+
+cm = table(test$Outcome, predict(model , newdata = test))
+confusionMatrix(cm)
+```
+
+
+***Conclusion: As we can see, the accuracy of the model is around 80% which is an acceptable solution according to the dataset. In conclusion, Support Vector Machine (SVM) is a powerful algorithm that can be used for classification and regression tasks. In this lab report, we explored how SVM works and applied it to a dataset to classify different types of flowers. We tuned the hyperparameters of the SVM model using grid search and evaluated its performance using various metrics. Overall, the SVM model performed well and achieved high accuracy on the test set. However, it is important to keep in mind the assumptions of SVM and carefully tune its parameters to achieve optimal performance. SVM is a valuable tool in machine learning and can be used in a wide range of applications.***

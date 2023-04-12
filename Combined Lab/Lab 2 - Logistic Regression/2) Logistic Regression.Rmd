@@ -1,0 +1,80 @@
+---
+title: "2) Logistic Regression"
+output: html_document
+date: "2023-04-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Pre-processing the data-set**
+```{r}
+library(MASS)
+data <- Boston
+
+processed_data <- na.omit(data)
+
+processed_data$high_medv <- ifelse(processed_data$medv > median(processed_data$medv), 1, 0)
+head(processed_data)
+summary(processed_data)
+str(processed_data)
+nrow(processed_data)
+```
+
+**Splitting the model**
+```{r}
+library(caret)
+
+indexs = createDataPartition(processed_data$high_medv, times = 1, p = 0.7, list = F) 
+#times = no. of times to be split
+#p = percentage of data to be used for training, here 70% is used of training and 30% for testing
+
+train = processed_data[indexs, ]
+nrow(train)
+test = processed_data[-indexs, ]
+nrow(test)
+```
+
+**Creating the model**
+```{r}
+# y - high_medv - dependent
+# x - lstat - independent
+# dependent ~ independent
+model <- glm(processed_data$high_medv ~ processed_data$lstat, data = train)
+model
+summary(model)
+```
+
+**Predicting the values using the model**
+```{r}
+predicted <- predict(model, newdata = test)
+predicted <- ifelse(predicted>mean(predicted),1,0)
+predicted
+
+length(predicted)
+length(processed_data$high_medv)
+
+#acc<- mean(predicted== test$high_medv)
+#acc
+
+#cm <- table(test$high_medv, predicted)
+cm <- table(processed_data$high_medv, predicted)
+cm
+
+#confusionMatrix(processed_data$high_medv, predicted)
+
+```
+
+**Plotting the logistic regression curve**
+```{r}
+library(ggplot2)
+
+ggplot(data = test, aes(x = lstat, y = high_medv)) +
+  geom_point() +
+  stat_smooth(method = "glm", method.args = list(family = "binomial"), se = FALSE, color = "red") +
+  labs(title = "Logistic Regression Model", x = "lstat", y = "high_medv")
+```
+
+
+***Conclusion: We can observe that the accuracy of the logistic model is 79% which is an acceptable one in terms of the data provided. The model can be further optimized with more number of dataset and applying proper data cleaning methods. From the significance of the model we can also see that the PClass attribute,  SexMale and Age are the most significant predictors in this dataset and it can be inferred that persons with higher passenger class and female passengers were mostly survived in the Titanic crash.***
